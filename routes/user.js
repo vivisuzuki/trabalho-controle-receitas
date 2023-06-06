@@ -1,7 +1,9 @@
 const express = require("express");
 const z = require("zod"); //utilizando para validar usuário
 const bcrypt = require("bcrypt"); //utilizado para criptografar senhas
+const jwt = require("jsonwebtoken");
 const { findUserByEmail, saveUser } = require("../database/user");
+const { route } = require("../server");
 
 const router = express.Router();
 
@@ -9,6 +11,11 @@ const UserSchema = z.object({
     email: z.string().email(),
     name: z.string().min(3),
     password: z.string().min(6)
+});
+
+const LoginSchema = z.object({
+    email: z.string().email(),
+    password: z.string()
 });
 
 router.post("/register", async (req, res) => {
@@ -28,7 +35,7 @@ router.post("/register", async (req, res) => {
         res.json({ user: savedUser });
     } catch (error) {
         if (error instanceof z.ZodError) { //tratando erros de validações inseridas pra cadastro de usuários
-            res.status(422).json({
+            return res.status(422).json({
                 message: error.errors,
             });
         }
@@ -36,6 +43,39 @@ router.post("/register", async (req, res) => {
             message: "Server Error",
         });
     };
+});
+
+
+router.post("/login", async (req, res) => {
+    try {
+        const data = LoginSchema.parse(req.body);
+        const user = await findUserByEmail(data.email);
+
+        if (!user) return res.status(401).send(); //validando se usuário existe no banco
+
+        const isSamePassword = bcrypt.compareSync(data.password, user.password);
+        if (!isSamePassword) return res.status(401).send(); //validando se a senha inserida é a mesma do banco
+
+        const token = jwt.sign(
+            {
+                userId: user.id  //o que vai ter na chave privada
+            },
+            process.env.SECRET  //senha que valida a chave
+        );
+
+        res.json({ token });
+    } catch (error) {
+        if (error instanceof z.ZodError) { //tratando erros de validações inseridas pra cadastro de usuários
+            return res.status(422).json({
+                message: error.errors,
+            });
+        }
+        res.status(500).json({  //tratando demais erros
+            message: "Server Error",
+        });
+    };
+
+
 });
 
 
