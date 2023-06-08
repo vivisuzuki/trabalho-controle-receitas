@@ -8,8 +8,14 @@ const { route } = require("../server");
 const router = express.Router();
 
 const UserSchema = z.object({
-    email: z.string().email(),
-    name: z.string().min(3),
+    email: z.string({
+        required_error: "email must be required",
+        invalid_type_error: "email must be string"
+    }).email(),
+    name: z.string({
+        required_error: "name must be required",
+        invalid_type_error: "name must be string"
+    }).min(3),
     password: z.string().min(6)
 });
 
@@ -18,7 +24,7 @@ const LoginSchema = z.object({
     password: z.string()
 });
 
-router.post("/register", async (req, res) => {
+router.post("/register", async (req, res, next) => {
     try {
         const user = UserSchema.parse(req.body);
         const isEmailAlreadyBeingUsed = await findUserByEmail(user.email);
@@ -34,19 +40,12 @@ router.post("/register", async (req, res) => {
 
         res.json({ user: savedUser });
     } catch (error) {
-        if (error instanceof z.ZodError) { //tratando erros de validações inseridas pra cadastro de usuários
-            return res.status(422).json({
-                message: error.errors,
-            });
-        }
-        res.status(500).json({  //tratando demais erros
-            message: "Server Error",
-        });
+        next(error);
     };
 });
 
 
-router.post("/login", async (req, res) => {
+router.post("/login", async (req, res, next) => {
     try {
         const data = LoginSchema.parse(req.body);
         const user = await findUserByEmail(data.email);
@@ -67,14 +66,7 @@ router.post("/login", async (req, res) => {
             token,
         });
     } catch (error) {
-        if (error instanceof z.ZodError) { //tratando erros de validações inseridas pra cadastro de usuários
-            return res.status(422).json({
-                message: error.errors,
-            });
-        }
-        res.status(500).json({  //tratando demais erros
-            message: "Server Error",
-        });
+        next(error);
     };
 });
 

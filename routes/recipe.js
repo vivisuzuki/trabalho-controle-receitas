@@ -42,7 +42,7 @@ router.get("/recipe", auth, async (req, res) => {
 });
 
 
-router.post("/recipe", auth, async (req, res) => {
+router.post("/recipe", auth, async (req, res, next) => {
     try {
         const recipe = RecipeSchema.parse(req.body); //validando os dados inseridos pelo usuário
         const userId = req.userId;
@@ -51,19 +51,12 @@ router.post("/recipe", auth, async (req, res) => {
             recipe: savedRecipe,
         });
     } catch (error) {
-        if (error instanceof z.ZodError) { //tratando erros de validações inseridas pra cadastro de usuários
-            return res.status(422).json({
-                message: error.errors,
-            });
-        }
-        res.status(500).json({  //tratando demais erros
-            message: "Server Error",
-        });
+        next(error);
     };
 });
 
 
-router.delete("/recipe/:id", auth, async (req, res) => {
+router.delete("/recipe/:id", auth, async (req, res, next) => {
     try {
         const id = Number(req.params.id);
         IdRecipeSchema.parse(id); //evita que parâmetro não seja número pro delete
@@ -78,19 +71,12 @@ router.delete("/recipe/:id", auth, async (req, res) => {
 
         res.status(204).send();
     } catch (error) {
-        if (error instanceof z.ZodError) {
-            return res.status(422).json({
-                message: error.errors,
-            });
-        }
-        res.status(500).json({
-            message: "Server Error",
-        });
+        next(error);
     };
 })
 
 
-router.put("/recipe/:id", auth, async (req, res) => {
+router.put("/recipe/:id", auth, async (req, res, next) => {
 
     try {
         const id = Number(req.params.id);
@@ -112,14 +98,7 @@ router.put("/recipe/:id", auth, async (req, res) => {
             recipe: recipeFinal
         });
     } catch (error) {
-        if (error instanceof z.ZodError) {
-            return res.status(422).json({
-                message: error.errors,
-            });
-        }
-        res.status(500).json({
-            message: "Server Error",
-        });
+        next(error);
     }
 
 })
