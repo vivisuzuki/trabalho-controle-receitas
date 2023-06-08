@@ -13,6 +13,12 @@ const RecipeSchema = z.object({
 
 const IdRecipeSchema = z.number();
 
+const UpdatedRecipeSchema = z.object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+    cooking_time: z.number().optional(),
+})
+
 router.get("/recipe", auth, async (req, res) => {
     const recipes = await findRecipesByUser(req.userId);
     res.json({
@@ -76,7 +82,7 @@ router.put("/recipe/:id", auth, async (req, res) => {
         IdRecipeSchema.parse(id); //evita que parâmetro não seja número pro update
 
         const userId = req.userId;
-        const recipe = RecipeSchema.parse(req.body); //validando os dados inseridos pelo usuário
+        const recipe = UpdatedRecipeSchema.parse(req.body); //validando os dados inseridos pelo usuário
         const updatedRecipe = await updateRecipe(id, recipe, userId);
 
         if (updatedRecipe.count === 0) {
