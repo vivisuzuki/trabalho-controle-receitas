@@ -46,28 +46,25 @@ router.post("/register", async (req, res, next) => {
 
 
 router.post("/login", async (req, res, next) => {
-    try {
-        const data = LoginSchema.parse(req.body);
-        const user = await findUserByEmail(data.email);
+    const data = LoginSchema.parse(req.body);
+    const user = await findUserByEmail(data.email);
 
-        if (!user) return res.status(401).send(); //validando se usuário existe no banco
+    if (!user) return res.status(401).send(); //validando se usuário existe no banco
 
-        const isSamePassword = bcrypt.compareSync(data.password, user.password);
-        if (!isSamePassword) return res.status(401).send(); //validando se a senha inserida é a mesma do banco
+    const isSamePassword = bcrypt.compareSync(data.password, user.password);
+    if (!isSamePassword) return res.status(401).send(); //validando se a senha inserida é a mesma do banco
 
-        const token = jwt.sign(
-            {
-                userId: user.id  //o que vai ter na chave privada
-            },
-            process.env.SECRET  //senha que valida a chave
-        );
+    const token = jwt.sign(
+        {
+            userId: user.id  //o que vai ter na chave privada
+        },
+        process.env.SECRET  //senha que valida a chave
+    );
 
-        res.json({
-            token,
-        });
-    } catch (error) {
-        next(error);
-    };
+    res.json({
+        succes: true,
+        token,
+    });
 });
 
 
