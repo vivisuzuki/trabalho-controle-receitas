@@ -6,17 +6,32 @@ const auth = require("../middleware/auth");
 const router = express.Router();
 
 const RecipeSchema = z.object({
-    name: z.string(),
-    description: z.string(),
-    cooking_time: z.number(),
+    name: z.string({
+        required_error: "name must be required",
+        invalid_type_error: "name must be string"
+    }),
+    description: z.string({
+        required_error: "description must be required",
+        invalid_type_error: "description must be string"
+    }),
+    cooking_time: z.number({
+        required_error: "cooking_time must be required",
+        invalid_type_error: "cooking_time must be number",
+    }).min(0),
 })
 
 const IdRecipeSchema = z.number();
 
 const UpdatedRecipeSchema = z.object({
-    name: z.string().optional(),
-    description: z.string().optional(),
-    cooking_time: z.number().optional(),
+    name: z.string({
+        invalid_type_error: "name must be string"
+    }).optional(),
+    description: z.string({
+        invalid_type_error: "description must be string"
+    }).optional(),
+    cooking_time: z.number({
+        invalid_type_error: "cooking_time must be number"
+    }).min(0).optional(),
 })
 
 router.get("/recipe", auth, async (req, res) => {
