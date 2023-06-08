@@ -63,7 +63,9 @@ router.post("/login", async (req, res) => {
             process.env.SECRET  //senha que valida a chave
         );
 
-        res.json({ token });
+        res.json({
+            token,
+        });
     } catch (error) {
         if (error instanceof z.ZodError) { //tratando erros de validações inseridas pra cadastro de usuários
             return res.status(422).json({
@@ -74,8 +76,6 @@ router.post("/login", async (req, res) => {
             message: "Server Error",
         });
     };
-
-
 });
 
 
